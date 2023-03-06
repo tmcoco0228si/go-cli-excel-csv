@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,14 +18,6 @@ var rootCmd = &cobra.Command{
 
 	// 実際の処理
 	RunE: func(cmd *cobra.Command, args []string) error {
-
-		// excelファイル読み込み
-		f, err := excelize.OpenFile("サンプル.xlsx")
-		if err != nil {
-			return err
-		}
-		f.SetCellValue("Sheet1", "A1", 123)
-		fmt.Println(f.GetCellValue("Sheet1", "A1"))
 		return nil
 	},
 }
