@@ -6,7 +6,6 @@ package cmd
 import (
 	"encoding/csv"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,59 +14,61 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// excelToCsvCmd represents the excelToCsv command
+// エクセルからCSVに変換するコマンド
 var excelToCsvCmd = &cobra.Command{
 	Use:   "excelToCsv",
-	Short: "",
-	Long:  ``,
+	Short: "エクセルからCSVに変換するコマンドです。",
+	Long: `エクセルからCSVに変換するコマンドです。
+					複数行入力されたセルがある状態でも行読み込みして全てCSVとして書き込みを行います。					
+				`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("excelToCsv called")
 
-		filePath := "サンプル.xlsx"
-		// excelファイル読み込み
+		filePath := "test.xlsx"
 		f, err := excelize.OpenFile(filePath)
 		if err != nil {
+			fmt.Println(err)
 			return err
 		}
-		fmt.Println(f.GetCellValue("Sheet1", "A1"))
 
-		// ファイル名のみを取得する
-		filename := filepath.Base(filePath)
+		// 拡張子（.xlsx）を取得する
+		extension := filepath.Base(filePath)
 
 		// .xlsx拡張子を取り除いたファイル名を取得する
-		newFileName := strings.TrimSuffix(filename, filepath.Ext(filename))
+		fileName := strings.TrimSuffix(extension, filepath.Ext(extension))
 
 		// xlsxファイル名を元にCSVファイル作成
-		csvFile, err := os.Create(newFileName + ".csv")
+		csvFile, err := os.Create(fileName + ".csv")
 		if err != nil {
+			fmt.Println(err)
 			return err
 		}
-		// csvFile.Close()
+		defer csvFile.Close()
 
-		// CSV書き込み
-		csvWriter := csv.NewWriter(csvFile)
-		//内部バッファのフラッシュ
-		defer csvWriter.Flush()
+		csvWriter := csv.NewWriter(csvFile) // CSVライターの作成、
+		defer csvWriter.Flush()             //内部バッファのフラッシュ
 
-		csvWriter.Write([]string{f.GetCellValue("Sheet1", "A1")})
+		rows := f.GetRows("Sheet1")
 
-		r := csv.NewReader(csvFile)
-		rows, err := r.ReadAll() // csvを一度に全て読み込む
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// [][]stringなのでループする
-		for _, v := range rows {
-			fmt.Println(v)
+		// 1行ずつ読み取り、行に対する複数セル
+		for _, row := range rows {
+			var record []string
+			for _, cellValue := range row {
+				fmt.Println(cellValue)
+				record = append(record, cellValue)
+			}
+			fmt.Println(record)
+			err := csvWriter.Write(record)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
 		}
 
 		return nil
+
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(excelToCsvCmd)
-	// excelToCsvCmd.PersistentFlags().String("foo", "", "A help for foo")
-	// excelToCsvCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
