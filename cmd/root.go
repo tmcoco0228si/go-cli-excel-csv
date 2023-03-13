@@ -41,10 +41,10 @@ func init() {
 // 設定ファイルと ENV 変数を読み込む。設定ファイルと ENV 変数を読み込む。
 func initConfig() {
 	if cfgFile != "" {
-		// コンフィグファイルのパス、名前、拡張子を明示的に定義します
+		// コンフィグファイルのパス、名前、拡張子を明示的に定義
 		viper.SetConfigFile(cfgFile)
 	} else {
-		//$HOME環境変数を返します
+		//$HOME環境変数を返す
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 
